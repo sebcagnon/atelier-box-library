@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheBox xar_version="3">
+    <Box name="root" id="1" localization="8" tooltip="Configures the wifi on the tablet.&#x0A;/!\ don&apos;t release the box in OpenSource project as the password and SSID are saved without encryption in the code." x="350" y="182">
+        <bitmap>media/images/box/interaction/IR_send.png</bitmap>
+        <script language="4">
+            <content>
+                <![CDATA[
+
+class MyClass(GeneratedClass):
+
+    def onLoad(self):
+        self.frameManager = None
+        try:
+            self.frameManager = ALProxy("ALFrameManager")
+        except Exception as e:
+            self.logger.error(e)
+
+    def onUnload(self):
+        pass
+
+    def _getTabletService(self):
+        tabletService = None
+        try:
+            tabletService = self.session().service("ALTabletService")
+        except Exception as e:
+            self.logger.error(e)
+        return tabletService
+
+    def onInput_onStart(self):
+        # We create TabletService here in order to avoid
+        # problems with connections and disconnections of the tablet during the life of the application
+        tabletService = self._getTabletService()
+        if tabletService:
+            try:
+                if tabletService.getWifiStatus != 'CONNECTED':
+                    ssid     = self.getParameter("SSID")
+                    pwd      = self.getParameter("password")
+                    security = self.getParameter("security")
+                    tabletService.configureWifi(security, ssid, pwd)
+            except Exception as err:
+                self.logger.error("Error during loadUrl : %s " % err)
+        else:
+            self.logger.warning("No ALTabletService, can't display the image.")
+        self.onStopped()
+
+    def onInput_onStop(self):
+        self.onUnload()
+        self.onStopped()]]>
+</content>
+        </script>
+        <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+        <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+        <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+        <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+        <Parameter name="SSID" inherits_from_parent="0" content_type="3" value="MYWIFI" default_value="MYWIFI" custom_choice="0" tooltip="the name of your wifi network" id="5" />
+        <Parameter name="password" inherits_from_parent="0" content_type="3" value="12345" default_value="12345" custom_choice="0" password="1" tooltip="/!\ password is saved without encryption in your project files" id="6" />
+        <Parameter name="security" inherits_from_parent="0" content_type="3" value="wpa" default_value="wpa" custom_choice="0" tooltip="" id="7">
+            <Choice value="wpa" />
+            <Choice value="wep" />
+        </Parameter>
+    </Box>
+</ChoregrapheBox>

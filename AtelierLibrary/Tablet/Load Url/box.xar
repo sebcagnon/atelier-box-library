@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheBox xar_version="3">
+    <Box name="root" id="13" localization="8" tooltip="loads a webpage in the tablet&#x0A;- tablet must be connected via wifi&#x0A;(use ALTabletService.configureWifi)&#x0A;- use Show Webview box to display the webpage" x="97" y="42">
+        <bitmap>media/images/box/interaction/rec_movie.png</bitmap>
+        <script language="4">
+            <content>
+                <![CDATA[
+
+class MyClass(GeneratedClass):
+
+    def onLoad(self):
+        self.frameManager = None
+        try:
+            self.frameManager = ALProxy("ALFrameManager")
+        except Exception as e:
+            self.logger.error(e)
+
+    def onUnload(self):
+        pass
+
+    def _getTabletService(self):
+        tabletService = None
+        try:
+            tabletService = self.session().service("ALTabletService")
+        except Exception as e:
+            self.logger.error(e)
+        return tabletService
+
+    def onInput_onStart(self):
+        # We create TabletService here in order to avoid
+        # problems with connections and disconnections of the tablet during the life of the application
+        tabletService = self._getTabletService()
+        if tabletService:
+            try:
+                url = self.getParameter("Url")
+                if url == '' or not url.startswith('http'):
+                    self.logger.error("URL is empty or does not include 'http'")
+                tabletService.loadUrl(url)
+                self.onStopped()
+            except Exception as err:
+                self.logger.error("Error during loadUrl : %s " % err)
+        else:
+            self.logger.warning("No ALTabletService, can't display the image.")
+            self.onStopped()
+
+    def onInput_onStop(self):
+        self.onUnload()
+        self.onStopped()]]>
+</content>
+        </script>
+        <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+        <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+        <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+        <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+        <Parameter name="Url" inherits_from_parent="0" content_type="3" value="http://www.google.com" default_value="http://www.google.com" custom_choice="0" tooltip="Full url. example: http://www.google.com" id="5" />
+    </Box>
+</ChoregrapheBox>
